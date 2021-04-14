@@ -13,9 +13,9 @@ connection.connect((err) => {
     //main function goes here
 });
 
-
+//
     // first prompt: what would you like to do
-    // options: view all employees & view all by (department/roles), 
+    // options: view all employees & view all by (department/roles),
     // (add/remove/update) employee, departments, roles
 
 //create main function here
@@ -71,3 +71,127 @@ const somethingClever = () => {
         }); //end of then
 
 }; //end of somethingClever()
+
+const viewAllEmployees = () => {
+    inquirer
+        .prompt({
+            //display all employees here w/ console.table
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const addEmployee = () => {
+    inquirer
+        .prompt(
+            {
+            name: 'firstname',
+            type: 'input',
+            message: "What is the new Employee's first name?",
+            },
+            {
+            name: 'lastname',
+            type: 'input',
+            message: "What is the new Employee's last name"
+            },
+            {
+            name: 'role_id',
+            type: 'list',
+            message: `Please choose this Employee's role:`,
+            choices: [],
+            },
+            {
+            name: 'manager_id',
+            type: 'list',
+            message: `Please choose this Employee's manager`,
+            choices: []
+            }            
+        )//role then manager
+        .then((answer) => {
+            //may not need to pass 'answer' or anything into the function
+            // end with run somethingClever()
+        })
+};
+
+const updateEmployee = () => {
+    inquirer
+        .prompt(
+            {
+            //need to add code here to get data from req.params(?) and add that data to the DB
+            }
+        )
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const removeEmployee = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const viewByDept = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const addDept = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const removeDept = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const viewByRole = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const addRole = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
+
+const removeRole = () => {
+    inquirer
+        .prompt({
+            //
+        })
+        .then((answer) => {
+            // end with run somethingClever()
+        })
+};
