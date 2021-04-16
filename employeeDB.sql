@@ -42,5 +42,3 @@ VALUES ("Full-Stack Dev", 75000, 1),
 ("Sales Advisor", 75000, 2),
 ("Accountant", 75000, 3),
 ("Lawyer", 75000, 4);
-
-

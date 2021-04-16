@@ -27,9 +27,9 @@ const somethingClever = () => {
             type: 'rawlist',
             message: 'What would you like to do?',
             choices: [
-                'View all Employees', 'Add a new Employee', 'Update an existing Employee', /*'Remove an Employee',*/
-                'View all Employees in a Department', 'Add a new Department', /*'Remove a Department',*/
-                'View all Employees in a Role', 'Add a new Role', /*'Remove a Role',*/
+                'View all Employees', 'Add a new Employee', 'Update an existing Employee',
+                'View all Employees in a Department', 'Add a new Department',
+                'View all Employees in a Role', 'Add a new Role',
             ],
         })
         .then((answer) => {
@@ -38,32 +38,23 @@ const somethingClever = () => {
                     viewAllEmployees();
                     break;
                 case 'Add a new Employee':
-                    getRoleData(); //needs made
+                    getEmpRoleData();
                     break;
                 case 'Update an existing Employee':
                     updateEmployee(); //needs made
                     break;
-                // case 'Remove an Employee':
-                //     removeEmployee(); //needs made
-                //     break;
                 case 'View all Employees in a Department' :
                     getDeptData(); 
                     break;
                 case 'Add a new Department' :
                     addDept(); //needs made
                     break;
-                // case 'Remove a Department' :
-                //     removeDept(); //needs made
-                //     break;
                 case 'View all Employees in a Role' :
-                    viewByRole(); //needs made
+                    getViewRoleData(); //needs made
                     break;
                 case 'Add a new Role' :
                     addRole(); //needs made
                     break;
-                // case 'Remove a Role' :
-                //     removeRole(); //needs made
-                //     break;
                 default:
                     console.log(`theres been an issue: ${answer}`);
                     break;
@@ -85,12 +76,12 @@ const viewAllEmployees = () => {
     somethingClever();
 };
 
-const getRoleData = () => {
+const getEmpRoleData = () => {
     let query = 'select roles.role_id, roles.title from roles;';
     connection.query(query, (err,res) => {
         if(err) console.log('error: ', err);
 
-        roleArray = res.map((data) => ({title: data.title, role_id: data.role_id}));
+        roleArray = res.map((data) => (data.title));
         console.log(res);
         console.log('data: ', roleArray);
         addEmployee(roleArray);
@@ -115,15 +106,15 @@ const addEmployee = (roleArray) => {
             name: 'role_id',
             type: 'list',
             message: `Please choose this Employee's role:`,
-            choices: (roleArray.title),
+            choices: roleArray
             },          
         ])
         .then((answer) => {
             console.log(answer);
-            let query = `INSERT INTO employee(first_name, last_name, role_id) 
-            VALUES ('${answer.first_name}','${answer.last_name}', ${answer.role_id});`
+            let query = `INSERT INTO employee(first_name, last_name, role_id)
+            VALUES('${answer.first_name}', '${answer.last_name}', (select roles.role_id from roles where roles.title = '${answer.role_id}'));`
             connection.query(query, (err,res) =>{
-                if(err) console.log(err);
+                if(err) console.log('error: ', err);
                 console.log(res);
                 console.log('finished');
             })
@@ -143,17 +134,6 @@ const updateEmployee = () => {
         })
 };
 
-// const removeEmployee = () => {
-//     inquirer
-//         .prompt({
-//             //
-//         })
-//         .then((answer) => {
-//             // end with run somethingClever()
-//         })
-// };
-
-//begin dapartment functions
 
 //view by whole dept
 const getDeptData = () => {
@@ -211,24 +191,38 @@ const addDept = () => {
         })
 };
 
-// const removeDept = () => {
-//     // const deptArray = await getDeptData();
-//     inquirer
-//         .prompt({
-//             //
-//         })
-//         .then((answer) => {
-//             // end with run somethingClever()
-//         })
-// };
-
-const viewByRole = () => {
+const getViewRoleData = () => {
+    let getRoles = 'select * from roles';
+    let roleArray;
+    connection.query(getRoles, (err,res) => {
+        if(err) console.log('198 error: ', err);
+        roleArray = res.map((data) => data.title);
+        console.log('roleArray: ', roleArray);
+        viewByRole(roleArray);
+    })
+}
+const viewByRole = (roleArray) => {
+    console.log('roles: ', roleArray);
     inquirer
-        .prompt({
-            //
-        })
+        .prompt(
+            {
+            name: 'role',
+            type: 'list',
+            message: 'Which Role would you like to search for?',
+            choices: roleArray
+            }
+        )
         .then((answer) => {
-            // end with run somethingClever()
+            console.log('answer: ',answer);
+            let query = `select employee.first_name, employee.last_name, roles.salary, department.department
+            from employee join (roles join department using(department_id)) using(role_id)
+            where roles.title = ? ;`
+            connection.query(query, answer.role, (err, res) => {
+                let table = cTable.getTable(res);
+                console.log('\n', table);
+                if(err) console.log(' 243 error: ', err)
+            })
+            somethingClever();
         })
 };
 
@@ -244,13 +238,4 @@ const addRole = () => {
         })
 };
 
-// const removeRole = () => {
-//     inquirer
-//         .prompt({
-//             //
-//         })
-//         .then((answer) => {
-//             // end with run somethingClever()
-//         })
-// };
 
