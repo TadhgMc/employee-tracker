@@ -5,7 +5,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: '',
+    password: 'M*lk1234',
     database: 'EmployeeDB',
 });
 
@@ -29,7 +29,7 @@ const somethingClever = () => {
             choices: [
                 'View all Employees', 'Add a new Employee', 'Update an existing Employee',
                 'View all Employees in a Department', 'Add a new Department',
-                'View all Employees in a Role', 'Add a new Role',
+                'View all Employees in a Role', 'Add a new Role', 'End',
             ],
         })
         .then((answer) => {
@@ -54,6 +54,9 @@ const somethingClever = () => {
                     break;
                 case 'Add a new Role' :
                     getDeptRoleData();
+                    break;
+                case 'End' :
+                    connection.end();
                     break;
                 default:
                     console.log(`theres been an issue: ${answer}`);
@@ -126,17 +129,24 @@ const addEmployee = (roleArray) => {
 //need to get employee names, and names of roles
 // select concat(employee.first_name, " ", employee.last_name) as employee_name, roles.title from employee join roles using(role_id);
 
-const getEmployeeRoleData = () => {
-    let query = `select concat(employee.first_name, " ", employee.last_name) as employee_name, roles.title 
-    from employee join roles using(role_id);`
-    connection.query(query, (err,res) => {
+const getEmployeeRoleData = async () => {
+
+    let employeeName,roleTitles;
+    const queryEmp = `select concat(employee.first_name, " ", employee.last_name) as employee_name from employee;`;
+    const queryRole = `select roles.title from roles;`;
+
+    await connection.query(queryEmp, (err,res) => {
         if(err) console.log('133 error: ', err);
         console.log('134 res: ', res);
-        let employeeName = res.map((data) => (data.employee_name));
-        let roleTitles = res.map((data) => (data.title));
-        console.log('\n', 'employeeName: ', employeeName, '\n roleTitles: ', roleTitles);
-        updateEmployeeRole(employeeName, roleTitles);
+        employeeName = res.map((data) => (data.employee_name));
+        console.log('\n', 'employeeName: ', employeeName);
+        
     });
+    await connection.query(queryRole, (err,res) => {
+        console.log('\n roleTitles: ', roleTitles)
+        roleTitles = res.map((data) => (data.title));
+        updateEmployeeRole(employeeName, roleTitles);
+    })
 };
 const updateEmployeeRole = (employeeName, roleTitles) => {
     console.log('\n', 'employeeName 2nd: ', employeeName, '\n roleTitles 2nd: ', roleTitles);
@@ -169,7 +179,7 @@ const updateEmployeeRole = (employeeName, roleTitles) => {
                 if(err) console.log('162 error: ', err);
                 console.log(res);
             })
-            //somethingClever()
+            somethingClever();
         })
 };
 
