@@ -14,12 +14,7 @@ connection.connect((err) => {
     somethingClever();
 });
 
-//
-    // first prompt: what would you like to do
-    // options: view all employees & view all by (department/roles),
-    // (add/remove/update) employee, departments, roles
-
-//create main function here
+// function that acts as main hub of app
 const somethingClever = () => {
     inquirer
         .prompt({
@@ -27,7 +22,7 @@ const somethingClever = () => {
             type: 'rawlist',
             message: 'What would you like to do?',
             choices: [
-                'View all Employees', 'Add a new Employee', 'Update an existing Employee',
+                'View all Employees', 'Add a new Employee', `Update an existing Employee's Role`,
                 'View all Employees in a Department', 'Add a new Department',
                 'View all Employees in a Role', 'Add a new Role', 'End',
             ],
@@ -40,8 +35,8 @@ const somethingClever = () => {
                 case 'Add a new Employee':
                     getEmpRoleData();
                     break;
-                case 'Update an existing Employee':
-                    getEmployeeRoleData(); //needs made
+                case `Update an existing Employee's Role`:
+                    getEmployeeRoleData();
                     break;
                 case 'View all Employees in a Department' :
                     getDeptData(); 
@@ -67,33 +62,29 @@ const somethingClever = () => {
 
 }; //end of somethingClever()
 
+// function to view all Employees
 const viewAllEmployees = () => {
-    let query = 'select employee.first_name, employee.last_name, roles.title, roles.salary, department.department';
-    query += ' from employee join (roles join department using(department_id))';
-    query += ' using(role_id);';
+    let query = `select employee.first_name, employee.last_name, roles.title, roles.salary, department.department
+     from employee join (roles join department using(department_id))
+     using(role_id);` ;
     connection.query(query, (err,res) => { 
         let table = cTable.getTable(res);
-        console.log('\n', table);
+        console.log('\n', table, '\n');
         if (err) console.log(err);
-    })
+    });
     somethingClever();
 };
 
-
+// function to add a new Employee
 const getEmpRoleData = () => {
     let query = 'select roles.role_id, roles.title from roles;';
     connection.query(query, (err,res) => {
         if(err) console.log('error: ', err);
-
         roleArray = res.map((data) => (data.title));
-        console.log(res);
-        console.log('data: ', roleArray);
         addEmployee(roleArray);
     });
 };
 const addEmployee = (roleArray) => {
-    console.log("roleArray: ", (roleArray));
-
     inquirer
         .prompt([
             {
@@ -114,21 +105,18 @@ const addEmployee = (roleArray) => {
             },          
         ])
         .then((answer) => {
-            console.log(answer);
             let query = `INSERT INTO employee(first_name, last_name, role_id)
-            VALUES('${answer.first_name}', '${answer.last_name}', (select roles.role_id from roles where roles.title = '${answer.role_id}'));`
+            VALUES('${answer.first_name}', '${answer.last_name}', (select roles.role_id from roles where roles.title = '${answer.role_id}'));`;
             connection.query(query, (err,res) =>{
                 if(err) console.log('error: ', err);
-                console.log(res);
                 console.log('finished');
             });
             somethingClever();
-        })
+        });
 };
 
-//need to get employee names, and names of roles
-// select concat(employee.first_name, " ", employee.last_name) as employee_name, roles.title from employee join roles using(role_id);
 
+// function to update an Employee's Role
 const getEmployeeRoleData = async () => {
 
     let employeeName,roleTitles;
@@ -137,19 +125,14 @@ const getEmployeeRoleData = async () => {
 
     await connection.query(queryEmp, (err,res) => {
         if(err) console.log('133 error: ', err);
-        console.log('134 res: ', res);
         employeeName = res.map((data) => (data.employee_name));
-        console.log('\n', 'employeeName: ', employeeName);
-        
     });
     await connection.query(queryRole, (err,res) => {
-        console.log('\n roleTitles: ', roleTitles)
         roleTitles = res.map((data) => (data.title));
         updateEmployeeRole(employeeName, roleTitles);
-    })
+    });
 };
 const updateEmployeeRole = (employeeName, roleTitles) => {
-    console.log('\n', 'employeeName 2nd: ', employeeName, '\n roleTitles 2nd: ', roleTitles);
     inquirer
         .prompt([
             {
@@ -166,9 +149,7 @@ const updateEmployeeRole = (employeeName, roleTitles) => {
             }
         ])
         .then((answer) => {
-            console.log('159 answers: ', answer);
             const empFirLast = answer.employee.split(' ');
-            console.log('empFirLast: ', empFirLast);
             let query = `
             update employee 
             set role_id = (select roles.role_id from roles where roles.title = "${answer.newRole}") 
@@ -176,31 +157,27 @@ const updateEmployeeRole = (employeeName, roleTitles) => {
             (select employee.employee_id where employee.first_name = "${empFirLast[0]}" and employee.last_name = "${empFirLast[1]}");
             `;
             connection.query(query, (err,res) => {
-                if(err) console.log('162 error: ', err);
-                console.log(res);
-            })
+                if(err) console.log('167 error: ', err);
+                console.log('finished');
+            });
             somethingClever();
-        })
+        });
 };
 
 
-//view by whole dept
+// function to view all Employees by Department
 const getDeptData = () => {
     let getDept = 'select * from department';
     let deptArray;
     connection.query(getDept, (err,res) => {
         if(err) console.log(err);
-
         deptArray = res.map((data) =>
             data.department
         );
-        console.log(deptArray);
         viewByDept(deptArray);
     });
 }
 const viewByDept = (deptArray) => {
-    
-    console.log(deptArray);
     inquirer
         .prompt(
             {
@@ -211,13 +188,12 @@ const viewByDept = (deptArray) => {
             }
         )
         .then((answer) => {
-            console.log(answer);
-            let query = 'select employee.first_name, employee.last_name, roles.title, roles.salary '
-            query += 'from employee join (roles join department using(department_id)) using(role_id)'
-            query += 'where department.department = ? ;'
+            let query = `select employee.first_name, employee.last_name, roles.title, roles.salary 
+            from employee join (roles join department using(department_id)) using(role_id)
+            where department.department = ? ;` ;
             connection.query(query, answer.dept, (err,res) => {
                 let table = cTable.getTable(res);
-                console.log('\n', table);
+                console.log('\n', table, '\n');
                 if (err) console.log(err);
             });
             somethingClever();
@@ -225,6 +201,7 @@ const viewByDept = (deptArray) => {
 
 };
 
+// function to add a new Department
 const addDept = () => {
     inquirer
         .prompt(
@@ -235,29 +212,27 @@ const addDept = () => {
             },
         )
         .then((answer) => {
-            console.log(answer);
             let query = `INSERT INTO department(department)
             VALUES("${answer.dptName}");`;
             connection.query(query, (err,res) => {
-                console.log('195 response: ', res)
-                if(err) console.log('195 error: ', err)
-            })
+                console.log('finished');
+                if(err) console.log('195 error: ', err);
+            });
             somethingClever();
-        })
+        });
 };
 
+// function to view all Employees by Role
 const getViewRoleData = () => {
     let getRoles = 'select * from roles';
     let roleArray;
     connection.query(getRoles, (err,res) => {
         if(err) console.log('198 error: ', err);
         roleArray = res.map((data) => data.title);
-        console.log('roleArray: ', roleArray);
         viewByRole(roleArray);
-    })
-}
+    });
+};
 const viewByRole = (roleArray) => {
-    console.log('roles: ', roleArray);
     inquirer
         .prompt(
             {
@@ -268,30 +243,27 @@ const viewByRole = (roleArray) => {
             }
         )
         .then((answer) => {
-            console.log('answer: ',answer);
             let query = `select employee.first_name, employee.last_name, roles.salary, department.department
             from employee join (roles join department using(department_id)) using(role_id)
-            where roles.title = ? ;`
+            where roles.title = ? ;`;
             connection.query(query, answer.role, (err, res) => {
                 let table = cTable.getTable(res);
-                console.log('\n', table);
-                if(err) console.log(' 243 error: ', err)
+                console.log('\n', table, '\n');
+                if(err) console.log(' 243 error: ', err);
             })
             somethingClever();
-        })
+        });
 };
 
-
+// function to add new Role
 const getDeptRoleData = () => {
     let getDept = 'select * from department';
     let deptArray;
     connection.query(getDept, (err,res) => {
         if(err) console.log(err);
-
         deptArray = res.map((data) =>
             data.department
         );
-        console.log(deptArray);
         addRole(deptArray);
     });
 };
@@ -316,17 +288,13 @@ const addRole = (deptArray) => {
             }
         ])
         .then((answer) => {
-            console.log(answer);
             let query = `INSERT INTO roles(title,salary,department_id)
             VALUES( "${answer.newRoleTitle}", ${answer.salary}, 
             (select department.department_id from department where department.department = "${answer.rolesDept}"));`;
-
             connection.query(query, (err,res) => {
-                console.log(res);
                 if(err) console.log('282 error: ', err);
-            })
-            somethingClever()
+                console.log('Finished!');
+            });
+            somethingClever();
         });
 };
-
-

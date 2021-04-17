@@ -7,7 +7,6 @@ employee_id INT NOT NULL AUTO_INCREMENT,
 first_name VARCHAR(30),
 last_name VARCHAR(30),
 role_id INT,
-manager_id INT,
 PRIMARY KEY(employee_id)
 );
 
@@ -26,11 +25,11 @@ PRIMARY KEY(department_id)
 );
 
 -- add employee
-INSERT INTO employee(first_name, last_name, role_id, manager_id)
-VALUES ("Bob","Roberts", 1, 4),
-("Tommy", "Shelby", 2, 1),
-("Homer", "Simpson", 3, 1),
-("Theodore","Willington", 4, null);
+INSERT INTO employee(first_name, last_name, role_id)
+VALUES ("Bob","Roberts", 1),
+("Tommy", "Shelby", 4),
+("Homer", "Simpson", 3),
+("Theodore","Willington", 2);
 
 -- add department
 INSERT INTO department(department)
