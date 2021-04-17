@@ -47,13 +47,13 @@ const somethingClever = () => {
                     getDeptData(); 
                     break;
                 case 'Add a new Department' :
-                    addDept(); //needs made
+                    addDept();
                     break;
                 case 'View all Employees in a Role' :
-                    getViewRoleData(); //needs made
+                    getViewRoleData();
                     break;
                 case 'Add a new Role' :
-                    addRole(); //needs made
+                    getDeptRoleData();
                     break;
                 default:
                     console.log(`theres been an issue: ${answer}`);
@@ -75,6 +75,7 @@ const viewAllEmployees = () => {
     })
     somethingClever();
 };
+
 
 const getEmpRoleData = () => {
     let query = 'select roles.role_id, roles.title from roles;';
@@ -121,6 +122,7 @@ const addEmployee = (roleArray) => {
             somethingClever();
         })
 };
+
 
 const updateEmployee = () => {
     inquirer
@@ -176,7 +178,6 @@ const viewByDept = (deptArray) => {
 
 };
 
-
 const addDept = () => {
     inquirer
         .prompt(
@@ -187,7 +188,14 @@ const addDept = () => {
             },
         )
         .then((answer) => {
-            // end with run somethingClever()
+            console.log(answer);
+            let query = `INSERT INTO department(department)
+            VALUES("${answer.dptName}");`;
+            connection.query(query, (err,res) => {
+                console.log('195 response: ', res)
+                if(err) console.log('195 error: ', err)
+            })
+            somethingClever();
         })
 };
 
@@ -226,16 +234,52 @@ const viewByRole = (roleArray) => {
         })
 };
 
-// may need a couple prompts for this depending on if I want to make preset roles with special info ||
-// || something special that notices if someone is a manager, if so, ask/make id for manager
-const addRole = () => { 
+
+const getDeptRoleData = () => {
+    let getDept = 'select * from department';
+    let deptArray;
+    connection.query(getDept, (err,res) => {
+        if(err) console.log(err);
+
+        deptArray = res.map((data) =>
+            data.department
+        );
+        console.log(deptArray);
+        addRole(deptArray);
+    });
+};
+const addRole = (deptArray) => { 
     inquirer
-        .prompt({
-            //
-        })
+        .prompt([
+            {
+                name: 'newRoleTitle',
+                type: 'input',
+                message: `what is the title of the Role you'd like to add?`,
+            },
+            {
+                name: 'salary',
+                type: 'input',
+                message: `What will this role's starting salary be?`
+            },
+            {
+                name: 'rolesDept',
+                type: 'list',
+                message: 'Which Department will this Role be part of?',
+                choices: deptArray,
+            }
+        ])
         .then((answer) => {
-            // end with run somethingClever()
-        })
+            console.log(answer);
+            let query = `INSERT INTO roles(title,salary,department_id)
+            VALUES( "${answer.newRoleTitle}", ${answer.salary}, 
+            (select department.department_id from department where department.department = "${answer.rolesDept}"));`;
+
+            connection.query(query, (err,res) => {
+                console.log(res);
+                if(err) console.log('282 error: ', err);
+            })
+            somethingClever()
+        });
 };
 
 
