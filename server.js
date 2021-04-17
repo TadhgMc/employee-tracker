@@ -41,7 +41,7 @@ const somethingClever = () => {
                     getEmpRoleData();
                     break;
                 case 'Update an existing Employee':
-                    updateEmployee(); //needs made
+                    getEmployeeRoleData(); //needs made
                     break;
                 case 'View all Employees in a Department' :
                     getDeptData(); 
@@ -118,21 +118,58 @@ const addEmployee = (roleArray) => {
                 if(err) console.log('error: ', err);
                 console.log(res);
                 console.log('finished');
-            })
+            });
             somethingClever();
         })
 };
 
+//need to get employee names, and names of roles
+// select concat(employee.first_name, " ", employee.last_name) as employee_name, roles.title from employee join roles using(role_id);
 
-const updateEmployee = () => {
+const getEmployeeRoleData = () => {
+    let query = `select concat(employee.first_name, " ", employee.last_name) as employee_name, roles.title 
+    from employee join roles using(role_id);`
+    connection.query(query, (err,res) => {
+        if(err) console.log('133 error: ', err);
+        console.log('134 res: ', res);
+        let employeeName = res.map((data) => (data.employee_name));
+        let roleTitles = res.map((data) => (data.title));
+        console.log('\n', 'employeeName: ', employeeName, '\n roleTitles: ', roleTitles);
+        updateEmployeeRole(employeeName, roleTitles);
+    });
+};
+const updateEmployeeRole = (employeeName, roleTitles) => {
+    console.log('\n', 'employeeName 2nd: ', employeeName, '\n roleTitles 2nd: ', roleTitles);
     inquirer
-        .prompt(
+        .prompt([
             {
-            //need to add code here to get data from req.params(?) and add that data to the DB
+                name: 'employee',
+                type: 'list',
+                message: 'Which Employee is being reassigned?',
+                choices: employeeName
+            },
+            {
+                name: 'newRole',
+                type: 'list',
+                message: `What is this Employee's new Role?`,
+                choices: roleTitles
             }
-        )
+        ])
         .then((answer) => {
-            // end with run somethingClever()
+            console.log('159 answers: ', answer);
+            const empFirLast = answer.employee.split(' ');
+            console.log('empFirLast: ', empFirLast);
+            let query = `
+            update employee 
+            set role_id = (select roles.role_id from roles where roles.title = "${answer.newRole}") 
+            where employee_id = 
+            (select employee.employee_id where employee.first_name = "${empFirLast[0]}" and employee.last_name = "${empFirLast[1]}");
+            `;
+            connection.query(query, (err,res) => {
+                if(err) console.log('162 error: ', err);
+                console.log(res);
+            })
+            //somethingClever()
         })
 };
 
